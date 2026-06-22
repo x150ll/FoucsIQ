@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0F">
+<meta name="description" content="اختبر سعة ذاكرتك العاملة. كم رقماً تتذكر؟ مبني على قانون ميلر العلمي.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FocusIQ">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+
+<!-- Open Graph (link previews) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="FocusIQ">
+<meta property="og:title" content="FocusIQ — اختبر ذاكرتك العاملة">
+<meta property="og:description" content="متوسط البشر يتذكّر 7 أرقام. كم تتذكّر أنت؟ اختبار ذاكرة مبني على قانون ميلر.">
+<meta property="og:image" content="og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:locale:alternate" content="en_US">
+
+<!-- Twitter / X Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FocusIQ — Test Your Working Memory">
+<meta name="twitter:description" content="Most humans recall 7 digits. How many can you? A memory test built on Miller's Law.">
+<meta name="twitter:image" content="og-image.png">
+<title>FocusIQ — الوعي التركيزي</title>
+<link rel="manifest" href="manifest.json">
+<style>
+/* ============================================================
+   FocusIQ — Clinical Neon
+   Single file. Zero CDN. System type stacks only.
+   ============================================================ */
+
+:root{
+  --bg:#0A0A0F;
+  --surface:#13131A;
+  --surface-2:#1A1A23;
+  --line:rgba(255,255,255,0.06);
+  --line-strong:rgba(255,255,255,0.12);
+
+  --cyan:#00E5FF;
+  --green:#00FFA3;
+  --amber:#FFB020;
+  --red:#FF3B6B;
+
+  --t-100:#FFFFFF;
+  --t-70:rgba(255,255,255,0.70);
+  --t-40:rgba(255,255,255,0.40);
+  --t-25:rgba(255,255,255,0.22);
+
+  --ease:cubic-bezier(0.16,1,0.3,1);
+  --ease-in:cubic-bezier(0.7,0,0.84,0);
+
+  --mono:ui-monospace,"SF Mono","Cascadia Code","Cascadia Mono","Roboto Mono","DejaVu Sans Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI","Noto Sans Arabic","Noto Kufi Arabic",Roboto,"Helvetica Neue",Arial,sans-serif;
+
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+
+html,body{height:100%;}
+body{
+  background:var(--bg);
+  color:var(--t-70);
+  font-family:var(--sans);
+  overflow:hidden;
+  position:fixed;
+  inset:0;
+  width:100%;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  user-select:none;
+}
+
+/* numeric / data uses mono everywhere */
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+
+/* ---------- ambient canvas ---------- */
+#particles{
+  position:fixed;inset:0;z-index:0;
+  pointer-events:none;
+}
+
+/* ---------- app shell ---------- */
+#app{
+  position:relative;z-index:1;
+  height:100%;width:100%;
+  display:flex;align-items:center;justify-content:center;
+}
+
+.screen{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:calc(28px + var(--safe-t)) 24px calc(28px + var(--safe-b));
+  opacity:0;visibility:hidden;
+  transform:scale(0.97);
+  transition:opacity .5s var(--ease),transform .6s var(--ease),visibility .5s;
+  pointer-events:none;
+}
+.screen.active{
+  opacity:1;visibility:visible;transform:scale(1);
+  pointer-events:auto;
+}
+.screen.exiting{
+  opacity:0;transform:scale(1.04);
+}
+
+/* ===================== TOP BAR ===================== */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:5;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:calc(14px + var(--safe-t)) 18px 14px;
+  pointer-events:none;
+}
+.topbar > *{pointer-events:auto;}
+.brand-mini{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:13px;letter-spacing:1px;
+  color:var(--t-40);font-weight:600;
+}
+.brand-mini .dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 8px var(--cyan),0 0 16px rgba(0,229,255,.5);
+  animation:pulse-dot 2.4s var(--ease) infinite;
+}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.35}}
+.tb-controls{display:flex;gap:8px;}
+.icon-btn{
+  width:40px;height:40px;border-radius:11px;
+  background:var(--surface);border:1px solid var(--line);
+  color:var(--t-70);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:border-color .35s var(--ease),background .35s var(--ease),transform .25s var(--ease),color .35s var(--ease);
+}
+.icon-btn:hover{border-color:var(--line-strong);background:var(--surface-2);}
+.icon-btn:active{transform:scale(.9);}
+.icon-btn svg{width:18px;height:18px;display:block;}
+.icon-btn .lang-txt{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.5px;}
+.icon-btn.muted{color:var(--t-25);}
+
+/* ===================== HERO ===================== */
+.hero-eyebrow{
+  font-family:var(--mono);font-size:12px;letter-spacing:3px;
+  color:var(--cyan);text-transform:uppercase;
+  margin-bottom:22px;opacity:0;
+  animation:rise .8s var(--ease) .1s forwards;
+}
+html[dir=rtl] .hero-eyebrow{letter-spacing:1px;}
+.hero-title{
+  font-family:var(--mono);
+  font-weight:700;
+  font-size:clamp(3.2rem,16vw,7rem);
+  line-height:.9;letter-spacing:-2px;
+  color:var(--t-100);
+  text-align:center;
+  padding:0 12px;
+  opacity:0;
+  animation:rise .9s var(--ease) .2s forwards;
+}
+.hero-title .iq{
+  color:var(--cyan);
+  text-shadow:0 0 24px rgba(0,229,255,.55),0 0 48px rgba(0,229,255,.25);
+}
+.hero-sub-ar{
+  font-family:var(--sans);font-weight:600;
+  font-size:clamp(1.1rem,4.5vw,1.6rem);
+  color:var(--t-70);margin-top:14px;letter-spacing:1px;
+  opacity:0;animation:rise .9s var(--ease) .32s forwards;
+}
+.hero-demo{
+  height:96px;margin:30px 0 6px;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;animation:rise .9s var(--ease) .44s forwards;
+}
+.demo-num{
+  font-family:var(--mono);font-weight:700;
+  font-size:clamp(2.4rem,9vw,3.6rem);letter-spacing:.4em;
+  padding-inline-start:.4em;
+  color:var(--t-100);
+}
+.hero-hook{
+  max-width:340px;text-align:center;
+  font-size:15px;line-height:1.6;color:var(--t-40);
+  margin-bottom:34px;
+  opacity:0;animation:rise .9s var(--ease) .56s forwards;
+}
+.hero-hook b{color:var(--t-70);font-weight:600;}
+
+.cta{
+  font-family:var(--mono);font-weight:700;font-size:16px;
+  letter-spacing:1px;
+  color:var(--bg);background:var(--cyan);
+  border:none;border-radius:14px;
+  padding:18px 52px;cursor:pointer;
+  position:relative;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(0,229,255,.4),0 8px 30px rgba(0,229,255,.28),0 0 60px rgba(0,229,255,.15);
+  transition:transform .3s var(--ease),box-shadow .4s var(--ease);
+  opacity:0;animation:rise .9s var(--ease) .66s forwards;
+}
+.cta:hover{transform:translateY(-3px);box-shadow:0 0 0 1px rgba(0,229,255,.6),0 14px 44px rgba(0,229,255,.4),0 0 80px rgba(0,229,255,.25);}
+.cta:active{transform:translateY(-1px) scale(.98);}
+
+.hero-foot{
+  position:absolute;bottom:calc(70px + var(--safe-b));
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:11px;letter-spacing:1px;
+  color:var(--t-25);
+  opacity:0;animation:rise .9s var(--ease) .8s forwards;
+  cursor:pointer;
+  transition:color .3s var(--ease);
+}
+.hero-foot:hover{color:var(--t-40);}
+.hero-foot svg{width:13px;height:13px;}
+
+@keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===================== MODE SELECT ===================== */
+.screen-head{
+  text-align:center;margin-bottom:34px;
+}
+.screen-kicker{
+  font-family:var(--mono);font-size:11px;letter-spacing:2px;
+  color:var(--t-40);text-transform:uppercase;margin-bottom:10px;
+}
+.screen-h1{
+  font-family:var(--mono);font-weight:700;
+  font-size:clamp(1.6rem,6vw,2.2rem);
+  color:var(--t-100);letter-spacing:-.5px;
+}
+.modes{
+  display:flex;flex-direction:column;gap:14px;
+  width:100%;max-width:380px;
+}
+.mode-card{
+  position:relative;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:20px 22px;
+  cursor:pointer;
+  overflow:hidden;
+  transition:transform .4s var(--ease),border-color .4s var(--ease),background .4s var(--ease),opacity .4s var(--ease);
+}
+.mode-card::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(120% 100% at 0% 0%,var(--accent-soft),transparent 60%);
+  opacity:0;transition:opacity .4s var(--ease);
+  pointer-events:none;
+}
+.mode-card:hover{transform:translateY(-6px);border-color:var(--accent);background:var(--surface-2);}
+.mode-card:hover::before{opacity:1;}
+.mode-card:active{transform:translateY(-2px) scale(.99);}
+.modes.dimmed .mode-card:not(:hover){opacity:.45;}
+
+.mode-card[data-mode=classic]{--accent:var(--cyan);--accent-soft:rgba(0,229,255,.14);}
+.mode-card[data-mode=speed]{--accent:var(--amber);--accent-soft:rgba(255,176,32,.14);}
+.mode-card[data-mode=chaos]{--accent:var(--red);--accent-soft:rgba(255,59,107,.14);}
+
+.mode-top{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+.mode-ico{
+  width:46px;height:46px;border-radius:13px;flex:none;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--accent-soft);
+  border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);
+  color:var(--accent);
+}
+.mode-ico svg{width:22px;height:22px;}
+.mode-name{
+  font-family:var(--mono);font-weight:700;font-size:18px;
+  color:var(--t-100);letter-spacing:.5px;
+}
+.mode-name .en{font-size:12px;color:var(--accent);display:block;letter-spacing:1px;margin-top:1px;}
+.mode-desc{font-size:13px;line-height:1.5;color:var(--t-40);padding-inline-start:60px;}
+html[dir=ltr] .mode-desc{padding-inline-start:60px;}
+
+.back-link{
+  margin-top:30px;
+  font-family:var(--mono);font-size:13px;letter-spacing:1px;
+  color:var(--t-40);background:none;border:none;cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+  transition:color .3s var(--ease);
+}
+.back-link:hover{color:var(--t-70);}
+.back-link svg{width:14px;height:14px;}
+html[dir=rtl] .back-link svg{transform:scaleX(-1);}
+
+/* ===================== GAME ===================== */
+#screen-game{padding:0;justify-content:flex-start;}
+.game-hud{
+  position:fixed;top:0;left:0;right:0;z-index:4;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:calc(64px + var(--safe-t)) 22px 0;
+  font-family:var(--mono);
+}
+.hud-stat{display:flex;flex-direction:column;gap:3px;}
+.hud-stat.right{align-items:flex-end;}
+.hud-label{font-size:10px;letter-spacing:1.5px;color:var(--t-25);text-transform:uppercase;}
+.hud-val{font-size:22px;font-weight:700;color:var(--t-100);line-height:1;}
+.hud-val.score{color:var(--cyan);}
+
+.game-core{
+  flex:1;width:100%;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:20px;min-height:0;
+}
+
+/* memorize ring */
+.mem-wrap{display:flex;flex-direction:column;align-items:center;gap:34px;}
+.ring{
+  position:relative;width:74px;height:74px;
+}
+.ring svg{transform:rotate(-90deg);width:74px;height:74px;}
+.ring circle{fill:none;stroke-width:4;}
+.ring .track{stroke:var(--line);}
+.ring .prog{
+  stroke:var(--cyan);stroke-linecap:round;
+  filter:drop-shadow(0 0 6px rgba(0,229,255,.7));
+  transition:stroke .3s;
+}
+.ring .count{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-weight:700;font-size:24px;color:var(--t-100);
+}
+
+.digits{
+  font-family:var(--mono);font-weight:700;
+  display:flex;flex-wrap:wrap;justify-content:center;gap:0;
+  direction:ltr; /* numbers always read left-to-right */
+}
+.digit{
+  font-size:clamp(2.8rem,13vw,5.5rem);
+  color:var(--t-100);
+  letter-spacing:0;padding:0 .09em;
+  opacity:0;transform:scale(.9) translateY(8px);
+  animation:digit-in .5s var(--ease) forwards;
+  text-shadow:
+    0 0 18px rgba(0,229,255,.55),
+    0 0 40px rgba(0,229,255,.28),
+    0 0 70px rgba(0,229,255,.14);
+}
+@keyframes digit-in{to{opacity:1;transform:scale(1) translateY(0)}}
+.digits.leaving .digit{animation:digit-out .32s var(--ease-in) forwards;}
+@keyframes digit-out{to{opacity:0;transform:scale(.94) translateY(-6px);filter:blur(3px)}}
+
+/* chaos visual layer */
+.digits.chaos .digit{animation:digit-in .5s var(--ease) forwards,float-d 2.6s ease-in-out infinite;}
+.digit.chaos-float{}
+@keyframes float-d{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  25%{transform:translateY(-7px) rotate(-2deg)}
+  75%{transform:translateY(6px) rotate(2deg)}
+}
+.digits.chaos .digit{
+  text-shadow:
+    .03em 0 0 rgba(255,59,107,.6),
+    -.03em 0 0 rgba(0,229,255,.6),
+    0 0 24px rgba(255,59,107,.4);
+}
+
+/* recall */
+.recall{display:flex;flex-direction:column;align-items:center;gap:30px;width:100%;}
+.slots{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:8px;
+  max-width:380px;
+  direction:ltr; /* fill left-to-right like a real number */
+}
+.slot{
+  width:42px;height:54px;border-radius:11px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-weight:700;font-size:24px;
+  color:var(--t-100);
+  transition:border-color .25s var(--ease),background .25s var(--ease),transform .25s var(--ease);
+}
+.slot.filled{border-color:var(--line-strong);background:var(--surface-2);}
+.slot.active{
+  border-color:var(--cyan);
+  box-shadow:0 0 0 1px var(--cyan),0 0 18px rgba(0,229,255,.35);
+}
+.slot.correct{border-color:var(--green);color:var(--green);background:rgba(0,255,163,.07);}
+.slot.wrong{border-color:var(--red);color:var(--red);background:rgba(255,59,107,.07);animation:shake .4s var(--ease);}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+
+.answer-reveal{
+  font-family:var(--mono);font-size:13px;color:var(--t-40);
+  text-align:center;min-height:20px;letter-spacing:1px;
+}
+.answer-reveal .correct-ans{color:var(--green);font-weight:700;direction:ltr;display:inline-block;}
+
+/* numpad */
+.numpad{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+  width:100%;max-width:300px;
+  direction:ltr; /* keypad layout is universal, never mirrored */
+}
+.key{
+  height:62px;border-radius:14px;
+  background:var(--surface);border:1px solid var(--line);
+  color:var(--t-100);
+  font-family:var(--mono);font-weight:700;font-size:24px;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s var(--ease),border-color .15s var(--ease),transform .1s var(--ease);
+}
+.key:hover{background:var(--surface-2);border-color:var(--line-strong);}
+.key:active,.key.pressed{background:var(--cyan);color:var(--bg);border-color:var(--cyan);transform:scale(.94);}
+.key.fn{font-size:18px;color:var(--t-40);}
+.key.fn:active,.key.fn.pressed{background:var(--surface-2);color:var(--t-100);}
+.key.submit{color:var(--cyan);}
+.key.submit:active,.key.submit.pressed{background:var(--cyan);color:var(--bg);}
+.key svg{width:22px;height:22px;}
+
+/* abandon */
+.abandon{
+  position:fixed;bottom:calc(48px + var(--safe-b));left:50%;transform:translateX(-50%);
+  z-index:4;
+  font-family:var(--mono);font-size:12px;letter-spacing:1px;
+  color:var(--t-25);background:none;border:none;cursor:pointer;
+  padding:8px 16px;transition:color .3s var(--ease);
+}
+.abandon:hover{color:var(--red);}
+
+/* ===================== RESULT ===================== */
+.result-scroll{
+  width:100%;max-width:420px;
+  max-height:100%;overflow-y:auto;
+  display:flex;flex-direction:column;align-items:center;
+  padding:calc(70px + var(--safe-t)) 4px calc(64px + var(--safe-b));
+  -webkit-overflow-scrolling:touch;
+}
+.res-kicker{
+  font-family:var(--mono);font-size:11px;letter-spacing:2px;
+  color:var(--t-40);text-transform:uppercase;margin-bottom:6px;
+}
+.res-score{
+  font-family:var(--mono);font-weight:700;
+  font-size:clamp(4.5rem,24vw,7rem);line-height:.9;
+  color:var(--cyan);
+  text-shadow:0 0 30px rgba(0,229,255,.5),0 0 60px rgba(0,229,255,.22);
+}
+.res-score-label{
+  font-family:var(--mono);font-size:12px;color:var(--t-40);
+  letter-spacing:2px;margin-top:4px;text-transform:uppercase;
+}
+.res-tier{
+  margin-top:20px;text-align:center;
+  font-family:var(--sans);font-weight:700;font-size:20px;
+  color:var(--t-100);
+  padding:0 10px;
+}
+.res-tier-sub{
+  font-size:13px;color:var(--t-40);margin-top:6px;line-height:1.5;
+  max-width:300px;text-align:center;
+}
+
+/* bell curve */
+.bell-wrap{
+  width:100%;margin:28px 0 8px;
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:18px;padding:20px 18px 14px;
+}
+.bell-title{
+  font-family:var(--mono);font-size:10px;letter-spacing:1.5px;
+  color:var(--t-40);text-transform:uppercase;margin-bottom:14px;text-align:center;
+}
+#bellCanvas{width:100%;height:120px;display:block;}
+.bell-legend{
+  display:flex;justify-content:center;gap:6px;align-items:baseline;
+  margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--t-40);
+}
+.bell-legend b{color:var(--cyan);font-size:13px;}
+
+/* session stats row */
+.res-stats{
+  display:flex;gap:10px;width:100%;margin:8px 0 24px;
+}
+.res-stat{
+  flex:1;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;padding:14px 10px;text-align:center;
+}
+.res-stat .v{font-family:var(--mono);font-weight:700;font-size:22px;color:var(--t-100);}
+.res-stat .l{font-size:10px;color:var(--t-40);letter-spacing:1px;text-transform:uppercase;margin-top:4px;}
+
+.res-actions{display:flex;flex-direction:column;gap:10px;width:100%;}
+.btn{
+  font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:.5px;
+  border-radius:14px;padding:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  border:1px solid var(--line);
+  transition:transform .25s var(--ease),border-color .3s var(--ease),background .3s var(--ease);
+}
+.btn svg{width:18px;height:18px;}
+.btn:active{transform:scale(.98);}
+.btn-primary{background:var(--cyan);color:var(--bg);border-color:var(--cyan);
+  box-shadow:0 6px 24px rgba(0,229,255,.28);}
+.btn-ghost{background:var(--surface);color:var(--t-70);}
+.btn-ghost:hover{border-color:var(--line-strong);background:var(--surface-2);}
+
+/* ===================== SHARE CARD PREVIEW ===================== */
+.sheet-overlay{
+  position:fixed;inset:0;z-index:20;
+  background:rgba(5,5,8,.82);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;visibility:hidden;
+  transition:opacity .4s var(--ease),visibility .4s;
+}
+.sheet-overlay.open{opacity:1;visibility:visible;}
+.sheet{
+  width:100%;max-width:440px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-bottom:none;
+  border-radius:24px 24px 0 0;
+  padding:14px 20px calc(24px + var(--safe-b));
+  transform:translateY(100%);
+  transition:transform .5s var(--ease);
+}
+.sheet-overlay.open .sheet{transform:translateY(0);}
+.sheet-grip{
+  width:40px;height:4px;border-radius:2px;background:var(--line-strong);
+  margin:0 auto 18px;
+}
+.sheet-h{
+  font-family:var(--mono);font-weight:700;font-size:15px;color:var(--t-100);
+  letter-spacing:.5px;margin-bottom:16px;text-align:center;
+}
+.card-preview{
+  width:100%;border-radius:16px;overflow:hidden;
+  border:1px solid var(--line);margin-bottom:18px;
+  background:var(--bg);
+}
+#shareCanvas{width:100%;display:block;}
+.sheet-actions{display:flex;flex-direction:column;gap:10px;}
+.format-toggle{
+  display:flex;gap:8px;margin-bottom:14px;
+}
+.fmt-btn{
+  flex:1;font-family:var(--mono);font-size:12px;font-weight:600;
+  padding:10px;border-radius:11px;cursor:pointer;letter-spacing:.5px;
+  background:var(--bg);border:1px solid var(--line);color:var(--t-40);
+  transition:border-color .3s var(--ease),color .3s var(--ease),background .3s var(--ease);
+}
+.fmt-btn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,.07);}
+
+/* ===================== SCIENCE ===================== */
+.science-scroll{
+  width:100%;max-width:520px;max-height:100%;overflow-y:auto;
+  padding:calc(70px + var(--safe-t)) 6px calc(64px + var(--safe-b));
+  -webkit-overflow-scrolling:touch;
+}
+.sci-h1{
+  font-family:var(--mono);font-weight:700;font-size:clamp(1.8rem,7vw,2.4rem);
+  color:var(--t-100);text-align:center;letter-spacing:-.5px;margin-bottom:6px;
+}
+.sci-h1 .n{color:var(--cyan);}
+.sci-intro{text-align:center;color:var(--t-40);font-size:14px;line-height:1.6;margin-bottom:34px;}
+.sci-block{
+  background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  padding:24px 22px;margin-bottom:14px;
+}
+.sci-num{
+  font-family:var(--mono);font-weight:700;font-size:48px;
+  color:var(--cyan);line-height:1;margin-bottom:14px;
+  text-shadow:0 0 24px rgba(0,229,255,.4);
+}
+.sci-num .pm{font-size:24px;color:var(--t-40);}
+.sci-block h3{
+  font-family:var(--mono);font-size:15px;color:var(--t-100);
+  letter-spacing:.5px;margin-bottom:10px;font-weight:700;
+}
+.sci-block p{font-size:14px;line-height:1.7;color:var(--t-70);}
+.sci-block p+p{margin-top:12px;}
+.sci-cite{
+  font-family:var(--mono);font-size:11px;color:var(--t-25);
+  margin-top:14px;letter-spacing:.5px;
+}
+
+/* ===================== FOOTER CREDIT ===================== */
+.footer-credit{
+  position:fixed;left:0;right:0;bottom:0;z-index:8;
+  display:flex;align-items:center;justify-content:center;
+  padding:14px 16px calc(14px + var(--safe-b));
+  pointer-events:none;
+  background:linear-gradient(to top,var(--bg) 30%,transparent);
+}
+.footer-credit.hidden{opacity:0;visibility:hidden;}
+.credit-btn{
+  pointer-events:auto;
+  background:none;border:none;cursor:pointer;
+  font-family:var(--mono);font-size:11px;letter-spacing:.5px;
+  color:var(--t-25);
+  display:inline-flex;align-items:center;gap:7px;
+  padding:6px 10px;border-radius:8px;
+  transition:color .3s var(--ease);
+}
+.credit-btn:hover{color:var(--cyan);}
+.credit-btn .name{
+  font-weight:700;color:var(--t-40);
+  transition:color .3s var(--ease),text-shadow .3s var(--ease);
+}
+.credit-btn:hover .name{color:var(--cyan);text-shadow:0 0 12px rgba(0,229,255,.5);}
+
+/* brand modal */
+.brand-overlay{
+  position:fixed;inset:0;z-index:30;
+  background:rgba(5,5,8,.85);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  opacity:0;visibility:hidden;
+  transition:opacity .4s var(--ease),visibility .4s;
+}
+.brand-overlay.open{opacity:1;visibility:visible;}
+.brand-modal{
+  width:100%;max-width:340px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:36px 28px 28px;
+  text-align:center;
+  position:relative;
+  transform:translateY(16px) scale(.96);
+  transition:transform .5s var(--ease);
+  overflow:hidden;
+}
+.brand-overlay.open .brand-modal{transform:translateY(0) scale(1);}
+.brand-modal::before{
+  content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:200px;height:200px;
+  background:radial-gradient(circle,rgba(0,229,255,.16),transparent 70%);
+  pointer-events:none;
+}
+.bm-close{
+  position:absolute;top:14px;inset-inline-end:14px;
+  width:34px;height:34px;border-radius:10px;
+  background:var(--surface-2);border:1px solid var(--line);
+  color:var(--t-40);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:color .3s var(--ease),border-color .3s var(--ease);
+  z-index:2;
+}
+.bm-close:hover{color:var(--t-100);border-color:var(--line-strong);}
+.bm-close svg{width:16px;height:16px;}
+.bm-logo{
+  position:relative;
+  width:76px;height:76px;margin:0 auto 18px;
+  display:flex;align-items:center;justify-content:center;
+}
+.bm-logo svg{width:76px;height:76px;}
+.bm-title{
+  position:relative;
+  font-family:var(--mono);font-weight:700;font-size:26px;
+  color:var(--t-100);letter-spacing:1px;margin-bottom:4px;
+}
+.bm-title .iq{color:var(--cyan);text-shadow:0 0 18px rgba(0,229,255,.5);}
+.bm-by{
+  position:relative;
+  font-family:var(--mono);font-size:12px;color:var(--t-40);
+  letter-spacing:1px;margin-bottom:26px;
+}
+.bm-by b{color:var(--t-70);font-weight:700;}
+.bm-socials{
+  position:relative;
+  display:flex;gap:12px;justify-content:center;
+}
+.social-link{
+  width:52px;height:52px;border-radius:15px;
+  background:var(--surface-2);border:1px solid var(--line);
+  color:var(--t-70);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;text-decoration:none;
+  transition:transform .3s var(--ease),border-color .3s var(--ease),color .3s var(--ease),background .3s var(--ease);
+}
+.social-link:hover{transform:translateY(-4px);border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,.08);}
+.social-link:active{transform:translateY(-1px) scale(.96);}
+.social-link svg{width:24px;height:24px;}
+
+/* toast */
+.toast{
+  position:fixed;bottom:calc(80px + var(--safe-b));left:50%;
+  transform:translateX(-50%) translateY(20px);
+  z-index:40;
+  background:var(--surface-2);border:1px solid var(--line-strong);
+  border-radius:12px;padding:12px 20px;
+  font-family:var(--mono);font-size:13px;color:var(--t-100);
+  letter-spacing:.5px;
+  opacity:0;visibility:hidden;
+  transition:opacity .35s var(--ease),transform .35s var(--ease),visibility .35s;
+  box-shadow:0 10px 40px rgba(0,0,0,.5);
+  max-width:90vw;text-align:center;
+}
+.toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);}
+
+/* countdown overlay */
+.countdown{
+  position:absolute;inset:0;z-index:6;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;
+}
+.cd-num{
+  font-family:var(--mono);font-weight:700;font-size:clamp(6rem,30vw,12rem);
+  color:var(--cyan);
+  text-shadow:0 0 40px rgba(0,229,255,.6),0 0 80px rgba(0,229,255,.3);
+  animation:cd-pop .9s var(--ease);
+}
+@keyframes cd-pop{0%{opacity:0;transform:scale(.5)}40%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.3)}}
+
+/* reduced motion */
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;transition-duration:.12s!important;}
+}
+
+/* focus visibility */
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px;}
+
+/* scrollbars */
+::-webkit-scrollbar{width:0;height:0;}
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<!-- top bar -->
+<div class="topbar">
+  <div class="brand-mini"><span class="dot"></span><span>FOCUSIQ</span></div>
+  <div class="tb-controls">
+    <button class="icon-btn" id="btnSound" aria-label="sound">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    </button>
+    <button class="icon-btn" id="btnLang" aria-label="language"><span class="lang-txt">EN</span></button>
+  </div>
+</div>
+
+<div id="app">
+
+  <!-- ========== HERO ========== -->
+  <section class="screen active" id="screen-hero">
+    <div class="hero-eyebrow" data-i="hero.eyebrow">WORKING MEMORY TEST</div>
+    <h1 class="hero-title">Focus<span class="iq">IQ</span></h1>
+    <div class="hero-sub-ar" data-i="hero.sub">الوعي التركيزي</div>
+    <div class="hero-demo"><div class="demo-num mono" id="heroDemo"></div></div>
+    <p class="hero-hook" data-i="hero.hook"></p>
+    <button class="cta" id="btnStart" data-i="hero.cta">ابدأ الاختبار</button>
+    <div class="hero-foot" id="btnScienceHero">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      <span data-i="hero.science">مبني على قانون ميلر العلمي</span>
+    </div>
+  </section>
+
+  <!-- ========== MODE SELECT ========== -->
+  <section class="screen" id="screen-mode">
+    <div class="screen-head">
+      <div class="screen-kicker" data-i="mode.kicker">SELECT MODE</div>
+      <div class="screen-h1" data-i="mode.title">اختر التحدي</div>
+    </div>
+    <div class="modes" id="modeList">
+      <div class="mode-card" data-mode="classic">
+        <div class="mode-top">
+          <div class="mode-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg></div>
+          <div class="mode-name"><span data-i="mode.classic.name">الكلاسيكي</span><span class="en">CLASSIC</span></div>
+        </div>
+        <div class="mode-desc" data-i="mode.classic.desc">الأرقام تطول تدريجياً. اكتشف حدّك الطبيعي.</div>
+      </div>
+      <div class="mode-card" data-mode="speed">
+        <div class="mode-top">
+          <div class="mode-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h8l-1 8 10-12h-8z"/></svg></div>
+          <div class="mode-name"><span data-i="mode.speed.name">السرعة</span><span class="en">SPEED</span></div>
+        </div>
+        <div class="mode-desc" data-i="mode.speed.desc">وقت أقل كل جولة. ضغط أعلى.</div>
+      </div>
+      <div class="mode-card" data-mode="chaos">
+        <div class="mode-top">
+          <div class="mode-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg></div>
+          <div class="mode-name"><span data-i="mode.chaos.name">الفوضى</span><span class="en">CHAOS</span></div>
+        </div>
+        <div class="mode-desc" data-i="mode.chaos.desc">كل شيء ضدك. هل تصمد؟</div>
+      </div>
+    </div>
+    <button class="back-link" id="btnBackHero">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span data-i="common.back">رجوع</span>
+    </button>
+  </section>
+
+  <!-- ========== GAME ========== -->
+  <section class="screen" id="screen-game">
+    <div class="game-hud">
+      <div class="hud-stat">
+        <span class="hud-label" data-i="game.round">ROUND</span>
+        <span class="hud-val" id="hudRound">1</span>
+      </div>
+      <div class="hud-stat right">
+        <span class="hud-label" data-i="game.best">BEST</span>
+        <span class="hud-val score" id="hudBest">0</span>
+      </div>
+    </div>
+
+    <div class="game-core" id="gameCore"></div>
+    <div class="countdown" id="countdown" style="display:none"></div>
+    <button class="abandon" id="btnAbandon" data-i="game.quit">إنهاء</button>
+  </section>
+
+  <!-- ========== RESULT ========== -->
+  <section class="screen" id="screen-result">
+    <div class="result-scroll">
+      <div class="res-kicker" data-i="result.kicker">YOUR RESULT</div>
+      <div class="res-score mono" id="resScore">0</div>
+      <div class="res-score-label" data-i="result.digits">DIGITS RECALLED</div>
+      <div class="res-tier" id="resTier"></div>
+      <div class="res-tier-sub" id="resTierSub"></div>
+
+      <div class="bell-wrap">
+        <div class="bell-title" data-i="result.distribution">HUMAN MEMORY DISTRIBUTION</div>
+        <canvas id="bellCanvas"></canvas>
+        <div class="bell-legend"><span data-i="result.youare">أنت عند</span> <b id="bellMark">0</b> <span data-i="result.avgline">— متوسط البشر ٧</span></div>
+      </div>
+
+      <div class="res-stats">
+        <div class="res-stat"><div class="v mono" id="statBest">0</div><div class="l" data-i="result.peak">PEAK</div></div>
+        <div class="res-stat"><div class="v mono" id="statRounds">0</div><div class="l" data-i="result.rounds">ROUNDS</div></div>
+        <div class="res-stat"><div class="v mono" id="statPct">0%</div><div class="l" data-i="result.percentile">TOP</div></div>
+      </div>
+
+      <div class="res-actions">
+        <button class="btn btn-primary" id="btnShare">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          <span data-i="result.share">بطاقة المشاركة</span>
+        </button>
+        <button class="btn btn-ghost" id="btnReplay">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          <span data-i="result.again">العب مرة أخرى</span>
+        </button>
+        <button class="btn btn-ghost" id="btnHome">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span data-i="result.home">الرئيسية</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SCIENCE ========== -->
+  <section class="screen" id="screen-science">
+    <div class="science-scroll">
+      <h1 class="sci-h1"><span data-i="sci.title">قانون</span> <span class="n">ميلر</span></h1>
+      <p class="sci-intro" data-i="sci.intro">لماذا ٧ أرقام؟ القصة العلمية وراء ذاكرتك العاملة.</p>
+
+      <div class="sci-block">
+        <div class="sci-num">7<span class="pm"> ± 2</span></div>
+        <h3 data-i="sci.b1.h">الرقم السحري</h3>
+        <p data-i="sci.b1.p">في عام ١٩٥٦، نشر عالم النفس جورج ميلر ورقة بحثية بيّن فيها أن الذاكرة العاملة للإنسان تستطيع الاحتفاظ بـ ٧ عناصر تقريباً في المتوسط — زائد أو ناقص اثنين. هذا يعني أن معظم الناس يتذكرون بين ٥ و٩ أرقام.</p>
+      </div>
+
+      <div class="sci-block">
+        <h3 data-i="sci.b2.h">ما هي الذاكرة العاملة؟</h3>
+        <p data-i="sci.b2.p">هي المساحة الذهنية المؤقتة التي تحتفظ فيها بالمعلومات أثناء استخدامها — مثل تذكّر رقم هاتف للحظات قبل كتابته. تختلف عن الذاكرة طويلة المدى، وهي محدودة السعة بطبيعتها.</p>
+      </div>
+
+      <div class="sci-block">
+        <h3 data-i="sci.b3.h">كيف تتجاوز الحد؟</h3>
+        <p data-i="sci.b3.p">السر هو "التجميع" (Chunking) — تحويل الأرقام المنفردة إلى مجموعات ذات معنى. بدلاً من حفظ ٧-٤-١-٩ كأربعة عناصر، احفظها كرقمين: ٧٤ و١٩. الخبراء يستخدمون هذه التقنية لتذكّر تسلسلات طويلة جداً.</p>
+        <div class="sci-cite">Miller, G. A. (1956). The Magical Number Seven.</div>
+      </div>
+
+      <button class="back-link" id="btnBackFromSci" style="margin:6px auto 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span data-i="common.back">رجوع</span>
+      </button>
+    </div>
+  </section>
+
+</div>
+
+<!-- persistent footer credit (every screen) -->
+<div class="footer-credit" id="footerCredit">
+  <button class="credit-btn" id="btnCredit">
+    <span data-i="footer.rights">جميع الحقوق محفوظة لـ</span>
+    <span class="name">X150LL</span>
+  </button>
+</div>
+
+<!-- brand modal -->
+<div class="brand-overlay" id="brandModal">
+  <div class="brand-modal">
+    <button class="bm-close" id="bmClose" aria-label="close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="bm-logo">
+      <svg viewBox="0 0 76 76" fill="none">
+        <circle cx="38" cy="38" r="26" stroke="#00E5FF" stroke-width="3" stroke-linecap="round" stroke-dasharray="120 40" transform="rotate(-90 38 38)" opacity="0.95"/>
+        <circle cx="38" cy="38" r="26" stroke="#00E5FF" stroke-width="7" stroke-linecap="round" stroke-dasharray="120 40" transform="rotate(-90 38 38)" opacity="0.18"/>
+        <circle cx="38" cy="38" r="5" fill="#00E5FF"/>
+      </svg>
+    </div>
+    <div class="bm-title">Focus<span class="iq">IQ</span></div>
+    <div class="bm-by"><span data-i="brand.by">من تطوير</span> <b>X150LL</b></div>
+    <div class="bm-socials">
+      <a class="social-link" id="lnkInsta" href="https://instagram.com/x150ll" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.6" cy="6.4" r="1.2" fill="currentColor" stroke="none"/></svg>
+      </a>
+      <a class="social-link" id="lnkTiktok" href="https://tiktok.com/@x150ll" target="_blank" rel="noopener" aria-label="TikTok">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5 2.59 2.59 0 0 1-2.59-2.59 2.59 2.59 0 0 1 3.4-2.46V9.66a5.66 5.66 0 0 0-.81-.06A5.68 5.68 0 0 0 4.2 15.3 5.68 5.68 0 0 0 9.86 21a5.68 5.68 0 0 0 5.68-5.68V8.99a7.34 7.34 0 0 0 4.27 1.37V7.27a4.28 4.28 0 0 1-3.21-1.45z"/></svg>
+      </a>
+    </div>
+  </div>
+</div>
+<div class="sheet-overlay" id="shareSheet">
+  <div class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-h" data-i="share.title">بطاقتك جاهزة</div>
+    <div class="format-toggle">
+      <button class="fmt-btn active" data-fmt="story" data-i="share.story">ستوري</button>
+      <button class="fmt-btn" data-fmt="square" data-i="share.square">مربع</button>
+    </div>
+    <div class="card-preview"><canvas id="shareCanvas"></canvas></div>
+    <div class="sheet-actions">
+      <button class="btn btn-primary" id="btnShareNow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        <span data-i="share.now">مشاركة</span>
+      </button>
+      <button class="btn btn-ghost" id="btnDownload">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span data-i="share.download">تحميل الصورة</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   i18n
+   ============================================================ */
+const I18N={
+  ar:{
+    "hero.eyebrow":"اختبار الذاكرة العاملة",
+    "hero.sub":"الوعي التركيزي",
+    "hero.hook":"متوسط البشر يتذكّر <b>٧ أرقام</b>. كم تتذكّر أنت؟",
+    "hero.cta":"ابدأ الاختبار",
+    "hero.science":"مبني على قانون ميلر العلمي",
+    "mode.kicker":"اختر الوضع",
+    "mode.title":"اختر التحدي",
+    "mode.classic.name":"الكلاسيكي","mode.classic.desc":"الأرقام تطول تدريجياً. اكتشف حدّك الطبيعي.",
+    "mode.speed.name":"السرعة","mode.speed.desc":"وقت أقل كل جولة. ضغط أعلى.",
+    "mode.chaos.name":"الفوضى","mode.chaos.desc":"كل شيء ضدك. هل تصمد؟",
+    "common.back":"رجوع",
+    "game.round":"الجولة","game.best":"الأفضل","game.quit":"إنهاء",
+    "game.memorize":"احفظ","game.recall":"اكتب ما تتذكره",
+    "result.kicker":"نتيجتك","result.digits":"رقم تذكّرته",
+    "result.distribution":"توزّع الذاكرة البشرية",
+    "result.youare":"أنت عند","result.avgline":"— متوسط البشر ٧",
+    "result.peak":"الأعلى","result.rounds":"جولات","result.percentile":"الأفضل",
+    "result.share":"بطاقة المشاركة","result.again":"العب مرة أخرى","result.home":"الرئيسية",
+    "share.title":"بطاقتك جاهزة","share.story":"ستوري","share.square":"مربع",
+    "share.now":"مشاركة","share.download":"تحميل الصورة",
+    "sci.title":"قانون","sci.intro":"لماذا ٧ أرقام؟ القصة العلمية وراء ذاكرتك العاملة.",
+    "sci.b1.h":"الرقم السحري","sci.b1.p":"في عام ١٩٥٦، نشر عالم النفس جورج ميلر ورقة بحثية بيّن فيها أن الذاكرة العاملة للإنسان تستطيع الاحتفاظ بـ ٧ عناصر تقريباً في المتوسط — زائد أو ناقص اثنين. هذا يعني أن معظم الناس يتذكرون بين ٥ و٩ أرقام.",
+    "sci.b2.h":"ما هي الذاكرة العاملة؟","sci.b2.p":"هي المساحة الذهنية المؤقتة التي تحتفظ فيها بالمعلومات أثناء استخدامها — مثل تذكّر رقم هاتف للحظات قبل كتابته. تختلف عن الذاكرة طويلة المدى، وهي محدودة السعة بطبيعتها.",
+    "sci.b3.h":"كيف تتجاوز الحد؟","sci.b3.p":"السر هو \"التجميع\" (Chunking) — تحويل الأرقام المنفردة إلى مجموعات ذات معنى. بدلاً من حفظ ٧-٤-١-٩ كأربعة عناصر، احفظها كرقمين: ٧٤ و١٩. الخبراء يستخدمون هذه التقنية لتذكّر تسلسلات طويلة جداً.",
+    "toast.copied":"تم النسخ","toast.saved":"تم حفظ الصورة","toast.nofewer":"الرقم الصحيح كان",
+    "footer.rights":"جميع الحقوق محفوظة لـ",
+    "brand.by":"من تطوير",
+    "tier.1":"تحت المتوسط","tier.1s":"دماغك يحتاج تمريناً — جرّب تقنية التجميع.",
+    "tier.2":"ضمن النطاق البشري","tier.2s":"أنت في قلب توزّع ميلر الطبيعي. ذاكرة سليمة تماماً.",
+    "tier.3":"فوق المتوسط","tier.3s":"ذاكرة استثنائية — أعلى من معظم البشر.",
+    "tier.4":"نادر جداً","tier.4s":"أقل من ١٪ يصلون هنا. عقل غير اعتيادي.",
+    "go":"انطلق"
+  },
+  en:{
+    "hero.eyebrow":"WORKING MEMORY TEST",
+    "hero.sub":"Cognitive Awareness",
+    "hero.hook":"The average human recalls <b>7 digits</b>. How many can you?",
+    "hero.cta":"Start Test",
+    "hero.science":"Built on Miller's Law",
+    "mode.kicker":"SELECT MODE",
+    "mode.title":"Choose Challenge",
+    "mode.classic.name":"Classic","mode.classic.desc":"Sequences grow longer. Find your natural limit.",
+    "mode.speed.name":"Speed","mode.speed.desc":"Less time each round. More pressure.",
+    "mode.chaos.name":"Chaos","mode.chaos.desc":"Everything works against you. Can you hold?",
+    "common.back":"Back",
+    "game.round":"ROUND","game.best":"BEST","game.quit":"Quit",
+    "game.memorize":"Memorize","game.recall":"Recall the sequence",
+    "result.kicker":"YOUR RESULT","result.digits":"DIGITS RECALLED",
+    "result.distribution":"HUMAN MEMORY DISTRIBUTION",
+    "result.youare":"You're at","result.avgline":"— human average 7",
+    "result.peak":"PEAK","result.rounds":"ROUNDS","result.percentile":"TOP",
+    "result.share":"Share Card","result.again":"Play Again","result.home":"Home",
+    "share.title":"Your Card Is Ready","share.story":"Story","share.square":"Square",
+    "share.now":"Share","share.download":"Download Image",
+    "sci.title":"Miller's","sci.intro":"Why seven digits? The science behind your working memory.",
+    "sci.b1.h":"The Magical Number","sci.b1.p":"In 1956, psychologist George Miller published a paper showing that human working memory holds about 7 items on average — plus or minus two. That means most people recall between 5 and 9 digits.",
+    "sci.b2.h":"What Is Working Memory?","sci.b2.p":"It's the temporary mental space that holds information while you use it — like remembering a phone number for a few seconds before dialing. It's distinct from long-term memory and limited by nature.",
+    "sci.b3.h":"How To Beat The Limit","sci.b3.p":"The trick is chunking — turning single digits into meaningful groups. Instead of storing 7-4-1-9 as four items, store two: 74 and 19. Experts use this to recall extremely long sequences.",
+    "toast.copied":"Copied","toast.saved":"Image saved","toast.nofewer":"The correct answer was",
+    "footer.rights":"All rights reserved ©",
+    "brand.by":"Created by",
+    "tier.1":"Below Average","tier.1s":"Your brain needs training — try the chunking technique.",
+    "tier.2":"Within Human Range","tier.2s":"You're right in Miller's natural distribution. Perfectly healthy memory.",
+    "tier.3":"Above Average","tier.3s":"Exceptional memory — higher than most humans.",
+    "tier.4":"Extremely Rare","tier.4s":"Fewer than 1% reach here. An extraordinary mind.",
+    "go":"GO"
+  }
+};
+
+let lang=localStorage.getItem('fiq_lang')||'ar';
+
+function applyLang(){
+  const dict=I18N[lang];
+  document.documentElement.lang=lang;
+  document.documentElement.dir = lang==='ar'?'rtl':'ltr';
+  document.querySelectorAll('[data-i]').forEach(el=>{
+    const k=el.getAttribute('data-i');
+    if(dict[k]!==undefined) el.innerHTML=dict[k];
+  });
+  document.querySelector('#btnLang .lang-txt').textContent = lang==='ar'?'EN':'ع';
+  localStorage.setItem('fiq_lang',lang);
+}
+const t=(k)=>I18N[lang][k]||k;
+
+/* localize digits for Arabic display */
+const AR_DIG=['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+function locNum(n){
+  if(lang!=='ar') return String(n);
+  return String(n).split('').map(c=>/[0-9]/.test(c)?AR_DIG[+c]:c).join('');
+}
+
+/* ============================================================
+   Audio (Web Audio API — generated, zero files)
+   ============================================================ */
+const Audio_={
+  ctx:null, on: localStorage.getItem('fiq_sound')!=='off',
+  init(){ if(!this.ctx){ try{this.ctx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } },
+  tone(freq,dur,type='sine',vol=0.13,slideTo=null){
+    if(!this.on||!this.ctx) return;
+    const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+    o.type=type; o.frequency.value=freq;
+    if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo,this.ctx.currentTime+dur);
+    g.gain.setValueAtTime(0,this.ctx.currentTime);
+    g.gain.linearRampToValueAtTime(vol,this.ctx.currentTime+0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001,this.ctx.currentTime+dur);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(); o.stop(this.ctx.currentTime+dur+0.02);
+  },
+  key(){ this.tone(420,0.06,'square',0.05); },
+  del(){ this.tone(240,0.07,'sine',0.06); },
+  show(){ this.tone(330,0.12,'sine',0.08,520); },
+  success(){ this.tone(523,0.1,'sine',0.1); setTimeout(()=>this.tone(784,0.16,'sine',0.1),90); },
+  fail(){ this.tone(180,0.28,'sawtooth',0.09,90); },
+  tick(){ this.tone(660,0.04,'sine',0.04); },
+  countdown(){ this.tone(440,0.1,'sine',0.07); },
+  go(){ this.tone(660,0.18,'sine',0.1,880); }
+};
+
+/* ============================================================
+   Particles
+   ============================================================ */
+const Particles=(()=>{
+  const cv=document.getElementById('particles');
+  const ctx=cv.getContext('2d');
+  let w,h,parts=[],raf,frozen=false,mouse={x:-999,y:-999},mode='classic';
+  const COLORS={classic:'0,229,255',speed:'255,176,32',chaos:'255,59,107'};
+  function resize(){
+    w=cv.width=innerWidth*devicePixelRatio;
+    h=cv.height=innerHeight*devicePixelRatio;
+    cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px';
+  }
+  function spawn(){
+    parts=[];
+    const n=Math.min(70,Math.floor(innerWidth*innerHeight/16000));
+    for(let i=0;i<n;i++){
+      parts.push({
+        x:Math.random()*w,y:Math.random()*h,
+        vx:(Math.random()-.5)*0.18*devicePixelRatio,
+        vy:(Math.random()-.5)*0.18*devicePixelRatio,
+        r:(Math.random()*1.6+0.5)*devicePixelRatio,
+        a:Math.random()*0.5+0.15
+      });
+    }
+  }
+  function tick(){
+    ctx.clearRect(0,0,w,h);
+    const col=COLORS[mode]||COLORS.classic;
+    const mr=120*devicePixelRatio;
+    for(const p of parts){
+      if(!frozen){
+        p.x+=p.vx; p.y+=p.vy;
+        // mouse repel
+        const dx=p.x-mouse.x, dy=p.y-mouse.y, d2=dx*dx+dy*dy;
+        if(d2<mr*mr){
+          const d=Math.sqrt(d2)||1, f=(mr-d)/mr*0.6;
+          p.x+=dx/d*f*devicePixelRatio*1.5; p.y+=dy/d*f*devicePixelRatio*1.5;
+        }
+        if(p.x<0)p.x=w; if(p.x>w)p.x=0; if(p.y<0)p.y=h; if(p.y>h)p.y=0;
+      }
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,6.283);
+      ctx.fillStyle=`rgba(${col},${p.a*(frozen?0.4:1)})`;
+      ctx.fill();
+    }
+    // connection lines
+    const maxD=110*devicePixelRatio;
+    for(let i=0;i<parts.length;i++){
+      for(let j=i+1;j<parts.length;j++){
+        const a=parts[i],b=parts[j];
+        const dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<maxD){
+          ctx.beginPath();
+          ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+          ctx.strokeStyle=`rgba(${col},${(1-d/maxD)*0.08*(frozen?0.3:1)})`;
+          ctx.lineWidth=devicePixelRatio*0.6;
+          ctx.stroke();
+        }
+      }
+    }
+    raf=requestAnimationFrame(tick);
+  }
+  addEventListener('resize',()=>{resize();spawn();});
+  addEventListener('mousemove',e=>{mouse.x=e.clientX*devicePixelRatio;mouse.y=e.clientY*devicePixelRatio;});
+  addEventListener('touchmove',e=>{if(e.touches[0]){mouse.x=e.touches[0].clientX*devicePixelRatio;mouse.y=e.touches[0].clientY*devicePixelRatio;}},{passive:true});
+  addEventListener('mouseleave',()=>{mouse.x=-999;mouse.y=-999;});
+  resize();spawn();tick();
+  return {
+    freeze(){frozen=true;}, unfreeze(){frozen=false;},
+    setMode(m){mode=m;},
+    burst(cx,cy){ // success ripple — pull then scatter
+      const px=cx*devicePixelRatio, py=cy*devicePixelRatio;
+      parts.forEach(p=>{
+        const dx=px-p.x, dy=py-p.y, d=Math.sqrt(dx*dx+dy*dy)||1;
+        p.vx+= dx/d*2.4; p.vy+= dy/d*2.4;
+      });
+      setTimeout(()=>parts.forEach(p=>{
+        p.vx=(Math.random()-.5)*0.18*devicePixelRatio;
+        p.vy=(Math.random()-.5)*0.18*devicePixelRatio;
+      }),400);
+    }
+  };
+})();
+
+/* ============================================================
+   Screen router
+   ============================================================ */
+function show(id){
+  const cur=document.querySelector('.screen.active');
+  const next=document.getElementById(id);
+  if(cur===next) return;
+  if(cur){ cur.classList.add('exiting'); cur.classList.remove('active');
+    setTimeout(()=>cur.classList.remove('exiting'),550); }
+  next.classList.add('active');
+  // footer credit shows on content screens, hidden during gameplay
+  const fc=document.getElementById('footerCredit');
+  if(fc) fc.classList.toggle('hidden', id==='screen-game');
+}
+
+/* ============================================================
+   Toast
+   ============================================================ */
+let toastT;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+/* ============================================================
+   Game engine
+   ============================================================ */
+const Game={
+  mode:'classic', round:0, len:0, seq:[], input:[], best:0,
+  peak:0, locked:false, memTimer:null, ringRAF:null,
+
+  cfg:{
+    classic:{start:3, memBase:2600, memPer:380, inc:1},
+    speed:{start:3, memBase:1700, memPer:150, inc:1},
+    chaos:{start:3, memBase:2400, memPer:300, inc:1}
+  },
+
+  start(mode){
+    this.mode=mode; this.round=0; this.peak=0;
+    this.best=+(localStorage.getItem('fiq_best_'+mode)||0);
+    Particles.setMode(mode);
+    document.getElementById('hudBest').textContent=locNum(this.best);
+    show('screen-game');
+    Audio_.init();
+    setTimeout(()=>this.countdown(),420);
+  },
+
+  countdown(){
+    const cd=document.getElementById('countdown');
+    const core=document.getElementById('gameCore');
+    core.innerHTML='';
+    cd.style.display='flex';
+    let n=3;
+    const step=()=>{
+      cd.innerHTML=`<div class="cd-num">${n===0?t('go'):locNum(n)}</div>`;
+      if(n===0){Audio_.go();} else {Audio_.countdown();}
+      n--;
+      if(n>=-1) setTimeout(step,700);
+      if(n<-1){ cd.style.display='none'; this.nextRound(); }
+    };
+    step();
+  },
+
+  nextRound(){
+    this.round++;
+    const c=this.cfg[this.mode];
+    this.len=c.start+(this.round-1)*c.inc;
+    this.seq=Array.from({length:this.len},()=>Math.floor(Math.random()*10));
+    this.input=[]; this.locked=false;
+    document.getElementById('hudRound').textContent=locNum(this.round);
+    this.renderMemorize();
+  },
+
+  renderMemorize(){
+    Particles.freeze();
+    const core=document.getElementById('gameCore');
+    const c=this.cfg[this.mode];
+    let memTime=Math.max(900,c.memBase + (this.len-c.start)*0 + this.len*c.memPer*0.001*1000/1);
+    // simpler: base + per-digit, shrinking via mode
+    memTime = c.memBase + this.len*c.memPer;
+    if(this.mode==='speed') memTime = Math.max(800, c.memBase + this.len*c.memPer - (this.round-1)*120);
+
+    const chaosClass=this.mode==='chaos'?' chaos':'';
+    core.innerHTML=`
+      <div class="mem-wrap">
+        <div class="ring">
+          <svg viewBox="0 0 74 74"><circle class="track" cx="37" cy="37" r="33"/><circle class="prog" cx="37" cy="37" r="33"/></svg>
+          <div class="count mono" id="ringCount"></div>
+        </div>
+        <div class="digits${chaosClass}" id="digits">
+          ${this.seq.map((d,i)=>`<span class="digit" style="animation-delay:${i*60}ms">${locNum(d)}</span>`).join('')}
+        </div>
+      </div>`;
+
+    const prog=core.querySelector('.prog');
+    const C=2*Math.PI*33; prog.style.strokeDasharray=C; prog.style.strokeDashoffset=0;
+    const ringCount=document.getElementById('ringCount');
+
+    const t0=performance.now();
+    let lastSec=Math.ceil(memTime/1000)+1;
+    const animate=(now)=>{
+      const el=now-t0, p=Math.min(1,el/memTime);
+      prog.style.strokeDashoffset=C*p;
+      const remain=Math.ceil((memTime-el)/1000);
+      if(remain!==lastSec && remain>=0){ lastSec=remain; ringCount.textContent=locNum(Math.max(0,remain)); if(remain<=3&&remain>0)Audio_.tick(); }
+      if(this.mode==='chaos') prog.style.stroke=`hsl(${340+Math.sin(el/200)*15},100%,60%)`;
+      if(p<1 && !this.locked){ this.ringRAF=requestAnimationFrame(animate); }
+    };
+    this.ringRAF=requestAnimationFrame(animate);
+    // chaos glitch
+    if(this.mode==='chaos') this.startGlitch();
+
+    this.memTimer=setTimeout(()=>this.renderRecall(),memTime);
+  },
+
+  startGlitch(){
+    const digits=document.getElementById('digits');
+    if(!digits) return;
+    this.glitchInt=setInterval(()=>{
+      const ds=digits.querySelectorAll('.digit');
+      if(!ds.length) return;
+      const d=ds[Math.floor(Math.random()*ds.length)];
+      d.style.transform='translateX('+((Math.random()-.5)*8)+'px)';
+      setTimeout(()=>{if(d)d.style.transform='';},80);
+    },340);
+  },
+  stopGlitch(){ clearInterval(this.glitchInt); },
+
+  renderRecall(){
+    clearTimeout(this.memTimer); cancelAnimationFrame(this.ringRAF); this.stopGlitch();
+    Audio_.show();
+    const core=document.getElementById('gameCore');
+    const digits=core.querySelector('.digits');
+    if(digits) digits.classList.add('leaving');
+
+    setTimeout(()=>{
+      core.innerHTML=`
+        <div class="recall">
+          <div class="slots" id="slots">
+            ${this.seq.map((_,i)=>`<div class="slot${i===0?' active':''}" data-i="${i}"></div>`).join('')}
+          </div>
+          <div class="answer-reveal" id="answerReveal"></div>
+          <div class="numpad" id="numpad">
+            ${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="key" data-n="${n}">${locNum(n)}</button>`).join('')}
+            <button class="key fn" data-act="del" aria-label="delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg></button>
+            <button class="key" data-n="0">${locNum(0)}</button>
+            <button class="key submit" data-act="submit" aria-label="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          </div>
+        </div>`;
+      this.bindPad();
+    },300);
+  },
+
+  bindPad(){
+    const pad=document.getElementById('numpad');
+    pad.querySelectorAll('.key').forEach(k=>{
+      k.addEventListener('click',()=>{
+        if(this.locked) return;
+        if(k.dataset.n!==undefined) this.press(+k.dataset.n);
+        else if(k.dataset.act==='del') this.del();
+        else if(k.dataset.act==='submit') this.submit();
+        k.classList.add('pressed'); setTimeout(()=>k.classList.remove('pressed'),120);
+      });
+    });
+  },
+
+  press(n){
+    if(this.input.length>=this.len) return;
+    this.input.push(n);
+    Audio_.key();
+    if(navigator.vibrate) navigator.vibrate(8);
+    this.paintSlots();
+    if(this.input.length===this.len) setTimeout(()=>this.submit(),260);
+  },
+  del(){
+    if(!this.input.length) return;
+    this.input.pop(); Audio_.del(); this.paintSlots();
+  },
+  paintSlots(){
+    const slots=document.querySelectorAll('.slot');
+    slots.forEach((s,i)=>{
+      s.classList.remove('active');
+      if(i<this.input.length){ s.textContent=locNum(this.input[i]); s.classList.add('filled'); }
+      else { s.textContent=''; s.classList.remove('filled'); }
+      if(i===this.input.length) s.classList.add('active');
+    });
+  },
+
+  submit(){
+    if(this.locked || this.input.length===0) return;
+    this.locked=true;
+    const correct = this.input.length===this.seq.length && this.input.every((d,i)=>d===this.seq[i]);
+    const slots=document.querySelectorAll('.slot');
+
+    if(correct){
+      slots.forEach(s=>s.classList.add('correct'));
+      Audio_.success();
+      if(navigator.vibrate) navigator.vibrate([10,40,10]);
+      this.peak=Math.max(this.peak,this.len);
+      if(this.len>this.best){ this.best=this.len; localStorage.setItem('fiq_best_'+this.mode,this.best);
+        document.getElementById('hudBest').textContent=locNum(this.best); }
+      const r=document.querySelector('.slots').getBoundingClientRect();
+      Particles.burst((r.left+r.right)/2,(r.top+r.bottom)/2);
+      setTimeout(()=>{Particles.unfreeze();this.nextRound();},850);
+    } else {
+      slots.forEach((s,i)=>{
+        if(this.input[i]===this.seq[i]) s.classList.add('correct');
+        else s.classList.add('wrong');
+      });
+      Audio_.fail();
+      if(navigator.vibrate) navigator.vibrate(200);
+      const rev=document.getElementById('answerReveal');
+      rev.innerHTML=`${t('toast.nofewer')} <span class="correct-ans">${this.seq.map(locNum).join(' ')}</span>`;
+      setTimeout(()=>this.end(),2400);
+    }
+  },
+
+  end(){
+    Particles.unfreeze();
+    const finalPeak=this.peak;
+    localStorage.setItem('fiq_rounds',(+(localStorage.getItem('fiq_rounds')||0))+this.round);
+    Result.show(finalPeak,this.round,this.best,this.mode);
+  },
+
+  abandon(){
+    clearTimeout(this.memTimer); cancelAnimationFrame(this.ringRAF); this.stopGlitch();
+    Particles.unfreeze();
+    show('screen-mode');
+  }
+};
+
+/* ============================================================
+   Result + tiers + bell curve
+   ============================================================ */
+const Result={
+  data:{},
+  tier(score){
+    if(score<=5) return {n:t('tier.1'),s:t('tier.1s'),pct:60};
+    if(score<=8) return {n:t('tier.2'),s:t('tier.2s'),pct:40};
+    if(score<=10) return {n:t('tier.3'),s:t('tier.3s'),pct:8};
+    return {n:t('tier.4'),s:t('tier.4s'),pct:1};
+  },
+  show(peak,rounds,best,mode){
+    this.data={peak,rounds,best,mode};
+    const tr=this.tier(peak);
+    document.getElementById('resScore').textContent=locNum(peak);
+    document.getElementById('resTier').textContent=tr.n;
+    document.getElementById('resTierSub').textContent=tr.s;
+    document.getElementById('statBest').textContent=locNum(best);
+    document.getElementById('statRounds').textContent=locNum(rounds);
+    document.getElementById('statPct').textContent=locNum(tr.pct)+'%';
+    document.getElementById('bellMark').textContent=locNum(peak);
+    show('screen-result');
+    setTimeout(()=>this.drawBell(peak),120);
+  },
+  drawBell(score){
+    const cv=document.getElementById('bellCanvas');
+    const dpr=devicePixelRatio||1;
+    const W=cv.clientWidth, H=120;
+    cv.width=W*dpr; cv.height=H*dpr;
+    const x=cv.getContext('2d'); x.scale(dpr,dpr);
+    x.clearRect(0,0,W,H);
+    const mean=7, sd=2, minV=1, maxV=15;
+    const xpos=v=>(v-minV)/(maxV-minV)*W;
+    const g=v=>Math.exp(-0.5*((v-mean)/sd)**2);
+    // fill
+    x.beginPath(); x.moveTo(0,H-8);
+    for(let v=minV;v<=maxV;v+=0.1){ x.lineTo(xpos(v),H-8-g(v)*(H-26)); }
+    x.lineTo(W,H-8); x.closePath();
+    const grad=x.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0,'rgba(0,229,255,0.22)'); grad.addColorStop(1,'rgba(0,229,255,0.02)');
+    x.fillStyle=grad; x.fill();
+    // curve line
+    x.beginPath();
+    for(let v=minV;v<=maxV;v+=0.1){ const px=xpos(v),py=H-8-g(v)*(H-26); v===minV?x.moveTo(px,py):x.lineTo(px,py); }
+    x.strokeStyle='rgba(0,229,255,0.5)'; x.lineWidth=1.5; x.stroke();
+    // mean line
+    x.beginPath(); x.moveTo(xpos(7),18); x.lineTo(xpos(7),H-8);
+    x.strokeStyle='rgba(255,255,255,0.18)'; x.lineWidth=1; x.setLineDash([3,3]); x.stroke(); x.setLineDash([]);
+    // your marker
+    const sx=xpos(Math.min(maxV,Math.max(minV,score)));
+    x.beginPath(); x.moveTo(sx,12); x.lineTo(sx,H-8);
+    x.strokeStyle='#00FFA3'; x.lineWidth=2; x.stroke();
+    x.beginPath(); x.arc(sx,H-8-g(score)*(H-26),5,0,6.283);
+    x.fillStyle='#00FFA3'; x.shadowColor='#00FFA3'; x.shadowBlur=12; x.fill(); x.shadowBlur=0;
+  }
+};
+
+/* ============================================================
+   Share card (canvas, generated)
+   ============================================================ */
+const Share={
+  fmt:'story',
+  open(){
+    document.getElementById('shareSheet').classList.add('open');
+    this.draw();
+  },
+  close(){ document.getElementById('shareSheet').classList.remove('open'); },
+  draw(){
+    const cv=document.getElementById('shareCanvas');
+    const story=this.fmt==='story';
+    const W=1080, H=story?1920:1080;
+    cv.width=W; cv.height=H;
+    const x=cv.getContext('2d');
+    const {peak,mode}=Result.data;
+    const tr=Result.tier(peak);
+
+    // bg
+    x.fillStyle='#0A0A0F'; x.fillRect(0,0,W,H);
+    // radial glow
+    const rg=x.createRadialGradient(W/2,H*0.36,40,W/2,H*0.36,W*0.7);
+    rg.addColorStop(0,'rgba(0,229,255,0.16)'); rg.addColorStop(1,'rgba(0,229,255,0)');
+    x.fillStyle=rg; x.fillRect(0,0,W,H);
+    // dotted texture
+    x.fillStyle='rgba(255,255,255,0.04)';
+    for(let i=0;i<140;i++){ const px=Math.random()*W,py=Math.random()*H,r=Math.random()*2+0.5;
+      x.beginPath(); x.arc(px,py,r,0,6.283); x.fill(); }
+
+    const cx=W/2;
+    // brand
+    x.textAlign='center';
+    x.fillStyle='#00E5FF';
+    x.font='700 38px ui-monospace,monospace';
+    const brandY=story?260:150;
+    x.fillText('FOCUSIQ', cx, brandY);
+    // drawn dot before the wordmark
+    x.beginPath();
+    x.arc(cx - x.measureText('FOCUSIQ').width/2 - 26, brandY-13, 9, 0, 6.283);
+    x.shadowColor='rgba(0,229,255,0.8)'; x.shadowBlur=18;
+    x.fill(); x.shadowBlur=0;
+
+    // eyebrow
+    x.fillStyle='rgba(255,255,255,0.4)';
+    x.font='500 30px ui-monospace,monospace';
+    const eyebrow = lang==='ar' ? 'اختبار الذاكرة العاملة' : 'WORKING MEMORY TEST';
+    x.fillText(eyebrow, cx, story?340:210);
+
+    // big score
+    const scoreY=story?720:440;
+    x.fillStyle='#fff';
+    x.shadowColor='rgba(0,229,255,0.6)'; x.shadowBlur=60;
+    x.font='700 '+(story?420:300)+'px ui-monospace,monospace';
+    x.fillText(locNum(peak), cx, scoreY);
+    x.shadowBlur=0;
+
+    // digits label
+    x.fillStyle='rgba(255,255,255,0.5)';
+    x.font='500 34px ui-monospace,monospace';
+    x.fillText(lang==='ar'?'رقم متتالٍ':'DIGITS IN A ROW', cx, scoreY+ (story?90:70));
+
+    // tier badge
+    const badgeY=story?1080:680;
+    x.fillStyle='#00FFA3';
+    x.font='700 '+(story?64:48)+'px system-ui,sans-serif';
+    x.fillText(tr.n, cx, badgeY);
+
+    // vs human
+    x.fillStyle='rgba(255,255,255,0.55)';
+    x.font='400 '+(story?38:30)+'px system-ui,sans-serif';
+    const vs = lang==='ar' ? `متوسط البشر ٧ أرقام` : `Human average: 7 digits`;
+    x.fillText(vs, cx, badgeY+(story?80:62));
+
+    // mini bell curve
+    const bw=story?620:480, bh=story?180:140, bx=cx-bw/2, by=story?1320:830;
+    const mean=7,sd=2,minV=1,maxV=15;
+    const xp=v=>bx+(v-minV)/(maxV-minV)*bw;
+    const gg=v=>Math.exp(-0.5*((v-mean)/sd)**2);
+    x.beginPath(); x.moveTo(bx,by+bh);
+    for(let v=minV;v<=maxV;v+=0.1) x.lineTo(xp(v),by+bh-gg(v)*bh);
+    x.lineTo(bx+bw,by+bh); x.closePath();
+    x.fillStyle='rgba(0,229,255,0.14)'; x.fill();
+    x.beginPath();
+    for(let v=minV;v<=maxV;v+=0.1){const px=xp(v),py=by+bh-gg(v)*bh; v===minV?x.moveTo(px,py):x.lineTo(px,py);}
+    x.strokeStyle='rgba(0,229,255,0.5)'; x.lineWidth=3; x.stroke();
+    const sx=xp(Math.min(maxV,Math.max(minV,peak)));
+    x.beginPath(); x.arc(sx,by+bh-gg(peak)*bh,12,0,6.283);
+    x.fillStyle='#00FFA3'; x.shadowColor='#00FFA3'; x.shadowBlur=24; x.fill(); x.shadowBlur=0;
+
+    // footer cta
+    x.fillStyle='rgba(255,255,255,0.4)';
+    x.font='500 34px ui-monospace,monospace';
+    x.fillText(lang==='ar'?'جرّب ذاكرتك — focusiq':'test your memory — focusiq', cx, story?1780:1010);
+  },
+  async shareNow(){
+    const cv=document.getElementById('shareCanvas');
+    cv.toBlob(async blob=>{
+      const file=new File([blob],'focusiq.png',{type:'image/png'});
+      const text = lang==='ar'
+        ? `تذكّرت ${locNum(Result.data.peak)} أرقام في FocusIQ! كم تقدر أنت؟`
+        : `I recalled ${Result.data.peak} digits on FocusIQ! How many can you?`;
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        try{ await navigator.share({files:[file],text,title:'FocusIQ'}); }catch(e){}
+      } else {
+        try{ await navigator.clipboard.writeText(text); toast(t('toast.copied')); }
+        catch(e){ this.download(); }
+      }
+    },'image/png');
+  },
+  download(){
+    const cv=document.getElementById('shareCanvas');
+    const a=document.createElement('a');
+    a.download='focusiq-'+Result.data.peak+'.png';
+    a.href=cv.toDataURL('image/png'); a.click();
+    toast(t('toast.saved'));
+  }
+};
+
+/* ============================================================
+   Hero demo loop
+   ============================================================ */
+function heroDemoLoop(){
+  const el=document.getElementById('heroDemo');
+  if(!el) return;
+  const seq=Array.from({length:5},()=>Math.floor(Math.random()*10));
+  let shown=true;
+  const render=()=>{ el.textContent = shown ? seq.map(locNum).join('') : ''; el.style.opacity=shown?'1':'0'; };
+  el.style.transition='opacity .5s var(--ease)';
+  render();
+  setInterval(()=>{
+    shown=!shown;
+    if(shown){ for(let i=0;i<5;i++)seq[i]=Math.floor(Math.random()*10); }
+    render();
+  },2400);
+}
+
+/* ============================================================
+   Wire up
+   ============================================================ */
+document.getElementById('btnStart').addEventListener('click',()=>{Audio_.init();show('screen-mode');});
+document.getElementById('btnBackHero').addEventListener('click',()=>show('screen-hero'));
+document.getElementById('btnScienceHero').addEventListener('click',()=>show('screen-science'));
+document.getElementById('btnBackFromSci').addEventListener('click',()=>show('screen-hero'));
+
+document.querySelectorAll('.mode-card').forEach(c=>{
+  c.addEventListener('click',()=>Game.start(c.dataset.mode));
+});
+const modeList=document.getElementById('modeList');
+modeList.addEventListener('mouseover',e=>{if(e.target.closest('.mode-card'))modeList.classList.add('dimmed');});
+modeList.addEventListener('mouseout',()=>modeList.classList.remove('dimmed'));
+
+document.getElementById('btnAbandon').addEventListener('click',()=>Game.abandon());
+document.getElementById('btnReplay').addEventListener('click',()=>Game.start(Result.data.mode));
+document.getElementById('btnHome').addEventListener('click',()=>show('screen-hero'));
+document.getElementById('btnShare').addEventListener('click',()=>Share.open());
+
+document.getElementById('shareSheet').addEventListener('click',e=>{if(e.target.id==='shareSheet')Share.close();});
+document.getElementById('btnShareNow').addEventListener('click',()=>Share.shareNow());
+document.getElementById('btnDownload').addEventListener('click',()=>Share.download());
+document.querySelectorAll('.fmt-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.fmt-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); Share.fmt=b.dataset.fmt; Share.draw();
+  });
+});
+
+// brand credit modal
+const brandModal=document.getElementById('brandModal');
+document.getElementById('btnCredit').addEventListener('click',()=>{brandModal.classList.add('open');});
+document.getElementById('bmClose').addEventListener('click',()=>{brandModal.classList.remove('open');});
+brandModal.addEventListener('click',e=>{if(e.target===brandModal)brandModal.classList.remove('open');});
+
+// language
+document.getElementById('btnLang').addEventListener('click',()=>{
+  lang = lang==='ar'?'en':'ar'; applyLang();
+});
+// sound toggle
+const btnSound=document.getElementById('btnSound');
+function syncSound(){ btnSound.classList.toggle('muted',!Audio_.on);
+  btnSound.innerHTML = Audio_.on
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+}
+btnSound.addEventListener('click',()=>{
+  Audio_.on=!Audio_.on; localStorage.setItem('fiq_sound',Audio_.on?'on':'off');
+  Audio_.init(); syncSound(); if(Audio_.on)Audio_.key();
+});
+
+// physical keyboard support
+addEventListener('keydown',e=>{
+  if(!document.getElementById('screen-game').classList.contains('active'))return;
+  if(Game.locked)return;
+  if(/[0-9]/.test(e.key)) Game.press(+e.key);
+  else if(e.key==='Backspace') Game.del();
+  else if(e.key==='Enter') Game.submit();
+});
+
+// init
+applyLang(); syncSound(); heroDemoLoop();
+
+// service worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
