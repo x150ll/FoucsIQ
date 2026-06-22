@@ -1640,9 +1640,28 @@ addEventListener('keydown',e=>{
 // init
 applyLang(); syncSound(); heroDemoLoop();
 
-// service worker
+// service worker — register and confirm offline readiness
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg=>{
+        console.log('[FocusIQ] service worker registered:',reg.scope);
+        // when the SW takes control for the first time, the app is offline-ready
+        if(reg.active && !navigator.serviceWorker.controller){
+          // controller will arrive shortly via clients.claim()
+        }
+        navigator.serviceWorker.ready.then(()=>{
+          // give the install event a moment to finish caching, then confirm
+          setTimeout(()=>{
+            if(!sessionStorage.getItem('fiq_offline_notified')){
+              sessionStorage.setItem('fiq_offline_notified','1');
+              toast(lang==='ar'?'جاهز للعمل بدون إنترنت':'Ready to work offline');
+            }
+          },1500);
+        });
+      })
+      .catch(err=>console.warn('[FocusIQ] SW registration failed:',err));
+  });
 }
 </script>
 </body>
