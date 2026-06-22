@@ -1,4 +1,4 @@
-const CACHE='focusiq-v2';
+const CACHE='focusiq-v3';
 const ASSETS=[
   './',
   './index.html',
